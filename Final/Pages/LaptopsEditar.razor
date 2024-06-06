@@ -1,0 +1,71 @@
+﻿@page "/laptops-editar/{memoriaRAM}"
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject NavigationManager NavigationManager
+
+<h3>Laptops</h3>
+
+<EditForm Model="@laptop" OnValidSubmit="@Guardar">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row">
+        <div class="col">
+            <label for="NumeroSerie">Numero de Serie </label>
+            <InputText id="NumeroSerie" @bind-Value="laptop.NumeroSerie" class="form-control" />
+            <ValidationMessage For="() => laptop.NumeroSerie" />
+        </div>
+        <div class="col">
+            <label for="Marca">Marca</label>
+            <InputText id="Marca" @bind-Value="laptop.Marca" class="form-control" />
+            <ValidationMessage For="() =>laptop.Marca" />
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-2">
+            <label for="Modelo">Modelo</label>
+            <InputText id="Modelo" @bind-Value="laptop.Modelo" class="form-control" />
+        </div>
+        <div class="col-8">
+            <label for="MemoriaRAM">Cantidad de Memoria</label>
+            <InputText id="MemoriaRAM" @bind-Value="laptop.MemoriaRAM" class="form-control" />
+        </div>
+        <div class="col-2">
+            <label for="Almacenamiento">Cantidad de almacenamiento</label>
+            <InputText id="Almacenamiento" @bind-Value="laptop.Almacenamiento" class="form-control" />
+
+        </div>
+
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </div>
+</EditForm>
+@code {
+
+    [Parameter]
+    public string memoriaRAM { get; set; }
+    private Laptop laptop = new Laptop();
+    List<Laptop> laptops = new List<Laptop>();
+
+
+    protected async Task Guardar()
+    {
+
+        await localStorage.SetItemAsync("laptops", laptops);
+
+        NavigationManager.NavigateTo("/laptops-crear");
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {   //La primera vez que se corre poner en comentarios, pues como no existen datos
+        //convierta la lista catedraticos en null
+        laptops = await localStorage.GetItemAsync<List<Laptop>>("laptops");
+
+        laptop = laptops.Find(c => c.MemoriaRAM == memoriaRAM);
+    }
+
+}

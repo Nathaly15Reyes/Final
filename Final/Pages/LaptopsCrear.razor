@@ -1,0 +1,121 @@
+﻿@page "/laptops-crear"
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject NavigationManager NavigationManager
+
+<h3>Laptops</h3>
+
+<EditForm Model="@laptop" OnValidSubmit="@Guardar">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row">
+        <div class="col">
+            <label for="NumeroSerie">Numero de Serie </label>
+            <InputText id="NumeroSerie" @bind-Value="laptop.NumeroSerie" class="form-control" />
+            <ValidationMessage For="() => laptop.NumeroSerie" />
+        </div>
+        <div class="col">
+            <label for="Marca">Marca</label>
+            <InputText id="Marca" @bind-Value="laptop.Marca" class="form-control" />
+            <ValidationMessage For="() => laptop.Marca" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-2">
+            <label for="Modelo">Modelo</label>
+            <InputText id="Modelo" @bind-Value="laptop.Modelo" class="form-control" />
+        </div>
+        <div class="col-8">
+            <label for="MemoriaRAM">Cantidad de Memoria</label>
+            <InputText id="MemoriaRAM" @bind-Value="laptop.MemoriaRAM" class="form-control" />
+        </div>
+        <div class="col-2">
+            <label for="Almacenamiento">Cantidad de almacenamiento</label>
+            <InputText id="Almacenamiento" @bind-Value="laptop.Almacenamiento" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-secondary" @onclick="MostrarListado">Mostrar Listado</button>
+    </div>
+</EditForm>
+
+@if (mostrarListado && laptops != null)
+{
+    <h4>Productos ingresados: @laptops.Count</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>NumeroSerie</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>MemoriaRAM</th>
+                <th>Almacenamiento</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var laptop in laptops)
+            {
+                <tr>
+                    <td>@laptop.NumeroSerie</td>
+                    <td>@laptop.Marca</td>
+                    <td>@laptop.Modelo</td>
+                    <td>@laptop.MemoriaRAM</td>
+                    <td>@laptop.Almacenamiento</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="@(() => BorrarAves(laptop.MemoriaRAM))">Eliminar</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-warning" @onclick="@(() => NavigationManager.NavigateTo($"/laptops-editar/{laptop.MemoriaRAM}"))">Editar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Laptop laptop = new Laptop();
+    List<Laptop> laptops = new List<Laptop>();
+    private bool mostrarListado = false;
+
+    protected async Task Guardar()
+    {
+        laptops.Add(laptop);
+        laptop = new Laptop();
+        await localStorage.SetItemAsync("laptops", laptops);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        laptops = await localStorage.GetItemAsync<List<Laptop>>("laptops");
+        if (laptops == null)
+        {
+            laptops = new List<Laptop>();
+        }
+    }
+
+    protected async Task BorrarAves(string MemoriaRAM)
+    {
+        laptops.Remove(laptops.First(c => c.MemoriaRAM == MemoriaRAM));
+        await localStorage.SetItemAsync("laptops", laptops);
+    }
+
+    private void MostrarListado()
+    {
+        mostrarListado = !mostrarListado;
+    }
+
+    public class Laptop
+    {
+        public string NumeroSerie { get; set; }
+        public string Marca { get; set; }
+        public string Modelo { get; set; }
+        public string MemoriaRAM { get; set; }
+        public string Almacenamiento { get; set; }
+    }
+}
